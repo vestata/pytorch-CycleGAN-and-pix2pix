@@ -17,7 +17,6 @@ if sys.version_info[0] == 2:
 else:
     VisdomExceptionBase = ConnectionError
 
-
 def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_wandb=False):
     """Save images to the disk.
 
@@ -37,16 +36,24 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
     webpage.add_header(name)
     ims, txts, links = [], [], []
     ims_dict = {}
+
     for label, im_data in visuals.items():
-        im = util.tensor2im(im_data)
-        image_name = '%s_%s.png' % (name, label)
-        save_path = os.path.join(image_dir, image_name)
-        util.save_image(im, save_path, aspect_ratio=aspect_ratio)
-        ims.append(image_name)
-        txts.append(label)
-        links.append(image_name)
-        if use_wandb:
-            ims_dict[label] = wandb.Image(im)
+        if im_data is not None and 'real' not in label:  # Skip saving any images labeled with 'real'
+            im = util.tensor2im(im_data)  # Convert tensor to image data
+            if im is not None:
+                image_name = f'{name}_{label}.png'
+                save_path = os.path.join(image_dir, image_name)
+                util.save_image(im, save_path, aspect_ratio=aspect_ratio)
+                ims.append(image_name)
+                txts.append(label)
+                links.append(image_name)
+                if use_wandb:
+                    ims_dict[label] = wandb.Image(im)
+            else:
+                print(f"Warning: Image data for '{label}' is None and was not saved.")
+        else:
+            print(f"Skipping image labeled '{label}' as it is flagged 'real'.")
+
     webpage.add_images(ims, txts, links, width=width)
     if use_wandb:
         wandb.log(ims_dict)

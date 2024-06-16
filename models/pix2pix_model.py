@@ -79,9 +79,23 @@ class Pix2PixModel(BaseModel):
         The option 'direction' can be used to swap images in domain A and domain B.
         """
         AtoB = self.opt.direction == 'AtoB'
-        self.real_A = input['A' if AtoB else 'B'].to(self.device)
-        self.real_B = input['B' if AtoB else 'A'].to(self.device)
-        self.image_paths = input['A_paths' if AtoB else 'B_paths']
+        # self.real_A = input['A' if AtoB else 'B'].to(self.device)
+        # self.real_B = input['B' if AtoB else 'A'].to(self.device)
+        # self.image_paths = input['A_paths' if AtoB else 'B_paths']
+        # ----------[nini]
+        # 檢查是否存在 'B'，如果不存在，則將 'B' 設置為 None
+        if 'B' in input:
+            self.real_A = input['A' if AtoB else 'B'].to(self.device)
+            self.real_B = input['B' if AtoB else 'A'].to(self.device)
+        else:
+            self.real_A = input['A'].to(self.device)
+            self.real_B = None  # 當 'B' 不存在時，將 real_B 設置為 None
+
+        # 處理圖像路徑，確保即使 'B_paths' 不存在也能正常工作
+        if 'B_paths' in input and 'A_paths' in input:
+            self.image_paths = input['A_paths' if AtoB else 'B_paths']
+        else:
+            self.image_paths = input['A_paths']  # 只使用 A_paths
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
