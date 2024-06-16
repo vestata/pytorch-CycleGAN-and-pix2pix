@@ -3,6 +3,7 @@ import os
 import sys
 import ntpath
 import time
+from PIL import Image
 from . import util, html
 from subprocess import Popen, PIPE
 
@@ -38,24 +39,26 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
     image_dir = webpage.get_image_dir()
     short_path = ntpath.basename(image_path[0])
     name = os.path.splitext(short_path)[0]
+    original_size = (178, 218)  # 原始圖片大小
 
     webpage.add_header(name)
     ims, txts, links = [], [], []
     ims_dict = {}
-
     for label, im_data in visuals.items():
-        if im_data is not None and 'real' not in label:  # Skip saving any images labeled with 'real'
+        if im_data is not None and 'real' not in label:
             im = util.tensor2im(im_data)  # Convert tensor to image data
-            im = de_normalize(im)
+            # im = de_normalize(im)  # Apply de-normalization if needed
+            image_pil = Image.fromarray(im)  # Convert numpy array to PIL Image
+            image_pil = image_pil.resize(original_size, Image.BILINEAR)  # Resize image back to original size
             if im is not None:
                 image_name = f'{name}_{label}.png'
                 save_path = os.path.join(image_dir, image_name)
-                util.save_image(im, save_path, aspect_ratio=aspect_ratio)
+                image_pil.save(save_path, format='PNG', quality=95)  # Save the image
                 ims.append(image_name)
                 txts.append(label)
                 links.append(image_name)
                 if use_wandb:
-                    ims_dict[label] = wandb.Image(im)
+                    ims_dict[label] = wandb.Image(image_pil)
             else:
                 print(f"Warning: Image data for '{label}' is None and was not saved.")
         else:
