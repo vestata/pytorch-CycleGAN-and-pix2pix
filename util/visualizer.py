@@ -18,11 +18,9 @@ if sys.version_info[0] == 2:
 else:
     VisdomExceptionBase = ConnectionError
 
-def de_normalize(image_numpy):
-    mean = np.array([0.5, 0.5, 0.5])
-    std = np.array([0.5, 0.5, 0.5])
-    image_numpy = (image_numpy * std) + mean  # Undo normalization
-    return np.clip(image_numpy * 255.0, 0, 255).astype(np.uint8)  # Convert to 8-bit pixel values
+def de_normalize(tensor):
+    # 假設tensor是一個PIL圖像轉換來的Tensor，且使用了均值0.5和標準差0.5進行標準化
+    return (tensor * 0.5 + 0.5) * 255
 
 def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_wandb=False):
     """Save images to the disk.
