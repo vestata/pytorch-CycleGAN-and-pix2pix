@@ -24,7 +24,7 @@ def process_images_to_csv(input_folder, output_file):
             file_path = os.path.join(input_folder, filename)
             try:
                 # Open the image, convert to grayscale, and convert to numpy array
-                image = Image.open(file_path).convert('L')
+                image = Image.open(file_path)
                 image_array = np.array(image)
                 # Flatten the array to one dimension and append to data
                 data.append(image_array.ravel())
