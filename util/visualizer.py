@@ -17,6 +17,12 @@ if sys.version_info[0] == 2:
 else:
     VisdomExceptionBase = ConnectionError
 
+def de_normalize(image_numpy):
+    mean = np.array([0.5, 0.5, 0.5])
+    std = np.array([0.5, 0.5, 0.5])
+    image_numpy = (image_numpy * std) + mean  # Undo normalization
+    return np.clip(image_numpy * 255.0, 0, 255).astype(np.uint8)  # Convert to 8-bit pixel values
+
 def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_wandb=False):
     """Save images to the disk.
 
@@ -40,6 +46,7 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
     for label, im_data in visuals.items():
         if im_data is not None and 'real' not in label:  # Skip saving any images labeled with 'real'
             im = util.tensor2im(im_data)  # Convert tensor to image data
+            im = de_normalize(im)
             if im is not None:
                 image_name = f'{name}_{label}.png'
                 save_path = os.path.join(image_dir, image_name)
