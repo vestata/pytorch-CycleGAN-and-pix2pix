@@ -108,6 +108,7 @@ def get_transform(opt, params=None, grayscale=False, method=transforms.Interpola
         if grayscale:
             transform_list += [transforms.Normalize((0.5,), (0.5,))]
         else:
+            # print(f"\n\n\nttt\n\n\n")
             transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
     return transforms.Compose(transform_list)
 

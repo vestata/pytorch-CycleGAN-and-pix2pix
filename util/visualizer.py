@@ -6,7 +6,8 @@ import time
 from PIL import Image
 from . import util, html
 from subprocess import Popen, PIPE
-
+import torch
+import torchvision.transforms as transforms
 
 try:
     import wandb
@@ -19,8 +20,12 @@ else:
     VisdomExceptionBase = ConnectionError
 
 def de_normalize(tensor):
-    # 假設tensor是一個PIL圖像轉換來的Tensor，且使用了均值0.5和標準差0.5進行標準化
-    return (tensor * 0.5 + 0.5) * 255
+    # 確保 mean 和 std 張量和 tensor 在相同的設備上
+    device = tensor.device
+    mean = torch.tensor([0.5, 0.5, 0.5], device=device).view(1, 3, 1, 1)
+    std = torch.tensor([0.5, 0.5, 0.5], device=device).view(1, 3, 1, 1)
+    tensor = tensor * std + mean  # 反標準化公式
+    return tensor
 
 def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_wandb=False):
     """Save images to the disk.
@@ -37,18 +42,22 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
     image_dir = webpage.get_image_dir()
     short_path = ntpath.basename(image_path[0])
     name = os.path.splitext(short_path)[0]
-    original_size = (178, 218)  # 原始圖片大小
 
     webpage.add_header(name)
     ims, txts, links = [], [], []
     ims_dict = {}
+    resize_transform = transforms.Resize((218, 178))
+
     for label, im_data in visuals.items():
         if im_data is not None and 'real' not in label:
-            im = util.tensor2im(im_data)  # Convert tensor to image data
-            # im = de_normalize(im)  # Apply de-normalization if needed
-            image_pil = Image.fromarray(im)  # Convert numpy array to PIL Image
-            image_pil = image_pil.resize(original_size, Image.BILINEAR)  # Resize image back to original size
-            if im is not None:
+            # im = util.tensor2im(im_data)  # Convert tensor to image data
+            # # im = de_normalize(im)  # Apply de-normalization if needed
+            # image_pil = Image.fromarray(im)  # Convert numpy array to PIL Image
+            # image_pil = image_pil.resize(original_size, Image.BILINEAR)  # Resize image back to original size
+            # im_data = de_normalize(im_data)
+            image_pil = Image.fromarray(util.tensor2im(im_data))  # 假设已将tensor转换为PIL Image
+            image_pil = resize_transform(image_pil)  # 应用尺寸调整
+            if image_pil is not None:
                 image_name = f'{name}_{label}.png'
                 save_path = os.path.join(image_dir, image_name)
                 image_pil.save(save_path, format='PNG', quality=95)  # Save the image

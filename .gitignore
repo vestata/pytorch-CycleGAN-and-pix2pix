@@ -42,6 +42,7 @@ test/data/legacy_serialized.pt
 *~
 .idea
 
+*.csv
 
 #Ignore Wandb
 wandb/

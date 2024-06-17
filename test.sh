@@ -17,10 +17,13 @@ echo "${name}"
 
 # 运行 train.py
 echo "Running training..."
-python3 train.py --dataroot ./ttt --name "$name" --model pix2pix --direction AtoB --n_epochs $n_epochs --n_epochs_decay $n_epochs_decay --lr $lr
+python3 train.py --dataroot ./ttt --name "$name" --model pix2pix --direction AtoB --n_epochs $n_epochs --n_epochs_decay $n_epochs_decay --lr $lr --batch_size 32
 
 # 运行 test.py
 echo "Running testing..."
-python3 test.py --dataroot ./ttt --name "$name" --model pix2pix --direction Ato
+python3 test.py --dataroot ./ttt --name "$name" --model pix2pix --direction Ato --dataset_mode single
+
+echo "Running ${name} tocsv.py..."
+python3 tocsv.py "./results/${name}/test_latest/images" "./csv/${name}.csv"
 
 echo "Scripts have completed."
