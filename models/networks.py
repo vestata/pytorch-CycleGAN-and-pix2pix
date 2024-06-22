@@ -501,6 +501,11 @@ class UnetSkipConnectionBlock(nn.Module):
         uprelu = nn.ReLU(True)
         upnorm = norm_layer(outer_nc)
 
+        # Extra convolution layers
+        extra_conv1 = nn.Conv2d(inner_nc, inner_nc, kernel_size=3, stride=1, padding=1, bias=use_bias)
+        extra_norm1 = norm_layer(inner_nc)
+        extra_relu1 = nn.LeakyReLU(0.2, True)
+
         if outermost:
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                         kernel_size=4, stride=2,
@@ -519,7 +524,7 @@ class UnetSkipConnectionBlock(nn.Module):
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                         kernel_size=4, stride=2,
                                         padding=1, bias=use_bias)
-            down = [downrelu, downconv, downnorm]
+            down = [downrelu, downconv, downnorm, extra_conv1, extra_norm1, extra_relu1]
             up = [uprelu, upconv, upnorm]
 
             if use_dropout:

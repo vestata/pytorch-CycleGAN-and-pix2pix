@@ -17,7 +17,7 @@ echo "${name}"
 
 # 运行 train.py
 echo "Running training..."
-python3 train.py --dataroot ./ttt --name "$name" --model pix2pix --direction AtoB --n_epochs $n_epochs --n_epochs_decay $n_epochs_decay --lr $lr --batch_size 32
+python3 train.py --dataroot ./ttt --name "$name" --model pix2pix --direction AtoB --n_epochs $n_epochs --n_epochs_decay $n_epochs_decay --lr $lr --batch_size 32 --n_layers_D 15
 
 # 运行 test.py
 echo "Running testing..."
